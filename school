@@ -1,0 +1,1151 @@
+import React, { useState, useMemo } from ‘react’;
+import { Users, GraduationCap, BookOpen, UserPlus, Plus, Edit2, Trash2, Save, X, BarChart3, FileText, UserCheck, Home, Search } from ‘lucide-react’;
+
+export default function SchoolManagementSystem() {
+const [activeTab, setActiveTab] = useState(‘dashboard’);
+
+// ទិន្នន័យគ្រូ
+const [teachers, setTeachers] = useState([
+{
+id: 1,
+teacherId: ‘T001’,
+lastName: ‘សុខ’,
+firstName: ‘ចន្ថា’,
+gender: ‘ស្រី’,
+dob: ‘1995-03-15’,
+startWorkDate: ‘2019-10-01’,
+framework: ‘បឋម’,
+salary: ‘គ.7’,
+status: ‘គ្រូមានថេរវេន’
+},
+{
+id: 2,
+teacherId: ‘T002’,
+lastName: ‘លី’,
+firstName: ‘សុផល’,
+gender: ‘ប្រុស’,
+dob: ‘1990-07-20’,
+startWorkDate: ‘2015-01-10’,
+framework: ‘មធ្យម’,
+salary: ‘គ.9’,
+status: ‘គ្រូមានថេរវេន’
+},
+{
+id: 3,
+teacherId: ‘T003’,
+lastName: ‘ចាន់’,
+firstName: ‘សុភា’,
+gender: ‘ស្រី’,
+dob: ‘1998-11-05’,
+startWorkDate: ‘2022-08-15’,
+framework: ‘បឋម’,
+salary: ‘គ.5’,
+status: ‘គ្រូកិច្ចសន្យា’
+}
+]);
+
+// ទិន្នន័យសិស្ស
+const [students, setStudents] = useState([
+{
+id: 1,
+studentId: ‘1860954’,
+lastName: ‘កា’,
+firstName: ‘បុប្ផា’,
+gender: ‘ស្រី’,
+dob: ‘2015-09-01’,
+phone: ‘012111111’,
+nationality: ‘ខ្មែរ’,
+academicYear: ‘2025-2026’,
+address: ‘ភូមិរោគ ឃុំស្ពានស្រែង ស្រុកភ្នំស្រុក ខេត្តបន្ទាយមានជ័យ’,
+fatherLastName: ‘អ៊ុច’,
+fatherFirstName: ‘កុយ’,
+fatherPhone: ‘012666666’,
+fatherOccupation: ‘កសិករ’,
+fatherAddress: ‘ភូមិរោគ ឃុំស្ពានស្រែង ស្រុកភ្នំស្រុក ខេត្តបន្ទាយមានជ័យ’,
+motherLastName: ‘ស្រិប’,
+motherFirstName: ‘ឡា’,
+motherPhone: ‘012777777’,
+motherOccupation: ‘កសិករ’,
+motherAddress: ‘ភូមិរោគ ឃុំស្ពានស្រែង ស្រុកភ្នំស្រុក ខេត្តបន្ទាយមានជ័យ’,
+minority: ‘ទេ’,
+specialNote: ‘ក្រ ២’
+},
+{
+id: 2,
+studentId: ‘1860955’,
+lastName: ‘លី’,
+firstName: ‘សុខា’,
+gender: ‘ប្រុស’,
+dob: ‘2015-08-15’,
+phone: ‘012222222’,
+nationality: ‘ខ្មែរ’,
+academicYear: ‘2025-2026’,
+address: ‘ភូមិត្រពាំងថ្ម ឃុំស្ពានស្រែង ស្រុកភ្នំស្រុក’,
+fatherLastName: ‘លី’,
+fatherFirstName: ‘វ៉ាន់’,
+fatherPhone: ‘’,
+fatherOccupation: ‘ជាងឈើ’,
+fatherAddress: ‘ភូមិត្រពាំងថ្ម ឃុំស្ពានស្រែង ស្រុកភ្នំស្រុក’,
+motherLastName: ‘យឹម’,
+motherFirstName: ‘សុខា’,
+motherPhone: ‘’,
+motherOccupation: ‘កសិករ’,
+motherAddress: ‘ភូមិត្រពាំងថ្ម ឃុំស្ពានស្រែង ស្រុកភ្នំស្រុក’,
+minority: ‘ទេ’,
+specialNote: ‘’
+}
+]);
+
+// ទំនាក់ទំនងថ្នាក់រៀន
+const [classrooms, setClassrooms] = useState([
+{ teacherId: 1, studentIds: [1, 2] },
+{ teacherId: 2, studentIds: [3, 4] },
+{ teacherId: 3, studentIds: [] }
+]);
+
+// State សម្រាប់ form
+const [isAddingTeacher, setIsAddingTeacher] = useState(false);
+const [isAddingStudent, setIsAddingStudent] = useState(false);
+const [editingTeacherId, setEditingTeacherId] = useState(null);
+const [editingStudentId, setEditingStudentId] = useState(null);
+const [searchTerm, setSearchTerm] = useState(’’);
+
+// State សម្រាប់ចាត់ថ្នាក់
+const [selectedTeacher, setSelectedTeacher] = useState(null);
+const [selectedStudents, setSelectedStudents] = useState([]);
+
+const [teacherForm, setTeacherForm] = useState({
+teacherId: ‘’,
+lastName: ‘’,
+firstName: ‘’,
+gender: ‘ប្រុស’,
+dob: ‘’,
+startWorkDate: ‘’,
+framework: ‘បឋម’,
+salary: ‘’,
+status: ‘គ្រូមានថេរវេន’
+});
+
+const [studentForm, setStudentForm] = useState({
+studentId: ‘’,
+lastName: ‘’,
+firstName: ‘’,
+gender: ‘ប្រុស’,
+dob: ‘’,
+phone: ‘’,
+nationality: ‘ខ្មែរ’,
+academicYear: ‘2025-2026’,
+address: ‘’,
+fatherLastName: ‘’,
+fatherFirstName: ‘’,
+fatherPhone: ‘’,
+fatherOccupation: ‘’,
+fatherAddress: ‘’,
+motherLastName: ‘’,
+motherFirstName: ‘’,
+motherPhone: ‘’,
+motherOccupation: ‘’,
+motherAddress: ‘’,
+minority: ‘ទេ’,
+specialNote: ‘’
+});
+
+// Function គណនាអាយុ
+const calculateAge = (dob) => {
+if (!dob) return 0;
+const today = new Date();
+const birthDate = new Date(dob);
+let age = today.getFullYear() - birthDate.getFullYear();
+const monthDiff = today.getMonth() - birthDate.getMonth();
+if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+age–;
+}
+return age;
+};
+
+// Function គណនារយៈពេលបម្រើការ
+const calculateServiceYears = (startDate) => {
+if (!startDate) return ‘0 ឆ្នាំ 0 ខែ’;
+const today = new Date();
+const start = new Date(startDate);
+let years = today.getFullYear() - start.getFullYear();
+let months = today.getMonth() - start.getMonth();
+
+```
+if (months < 0) {
+  years--;
+  months += 12;
+}
+
+return `${years} ឆ្នាំ ${months} ខែ`;
+```
+
+};
+const getStudentsInClass = (teacherId) => {
+const classroom = classrooms.find(c => c.teacherId === teacherId);
+if (!classroom) return [];
+return students.filter(s => classroom.studentIds.includes(s.id));
+};
+
+// Function ទទួលបានសិស្សដែលមិនទាន់មានថ្នាក់
+const getUnassignedStudents = () => {
+const assignedStudentIds = classrooms.flatMap(c => c.studentIds);
+return students.filter(s => !assignedStudentIds.includes(s.id));
+};
+
+// Function ស្វែងរក
+const filterTeachers = useMemo(() => {
+return teachers.filter(t =>
+`${t.lastName} ${t.firstName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+t.teacherId.toLowerCase().includes(searchTerm.toLowerCase())
+);
+}, [teachers, searchTerm]);
+
+const filterStudents = useMemo(() => {
+return students.filter(s =>
+`${s.lastName} ${s.firstName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+s.studentId.toLowerCase().includes(searchTerm.toLowerCase())
+);
+}, [students, searchTerm]);
+
+// គណនាស្ថិតិ
+const stats = useMemo(() => {
+const totalTeachers = teachers.length;
+const totalStudents = students.length;
+const assignedStudents = classrooms.flatMap(c => c.studentIds).length;
+const unassignedStudents = totalStudents - assignedStudents;
+const maleStudents = students.filter(s => s.gender === ‘ប្រុស’).length;
+const femaleStudents = students.filter(s => s.gender === ‘ស្រី’).length;
+
+```
+return {
+  totalTeachers,
+  totalStudents,
+  assignedStudents,
+  unassignedStudents,
+  maleStudents,
+  femaleStudents
+};
+```
+
+}, [teachers, students, classrooms]);
+
+// CRUD គ្រូ
+const handleSaveTeacher = () => {
+if (editingTeacherId) {
+setTeachers(teachers.map(t => t.id === editingTeacherId ? { …teacherForm, id: editingTeacherId } : t));
+setEditingTeacherId(null);
+} else {
+setTeachers([…teachers, { …teacherForm, id: Date.now() }]);
+setIsAddingTeacher(false);
+}
+setTeacherForm({
+teacherId: ‘’,
+lastName: ‘’,
+firstName: ‘’,
+gender: ‘ប្រុស’,
+dob: ‘’,
+startWorkDate: ‘’,
+framework: ‘បឋម’,
+salary: ‘’,
+status: ‘គ្រូមានថេរវេន’
+});
+};
+
+const handleEditTeacher = (teacher) => {
+setEditingTeacherId(teacher.id);
+setTeacherForm(teacher);
+};
+
+const handleDeleteTeacher = (id) => {
+if (confirm(‘តើអ្នកចង់លុបគ្រូនេះមែនទេ?’)) {
+setTeachers(teachers.filter(t => t.id !== id));
+setClassrooms(classrooms.filter(c => c.teacherId !== id));
+}
+};
+
+// CRUD សិស្ស
+const handleSaveStudent = () => {
+if (editingStudentId) {
+setStudents(students.map(s => s.id === editingStudentId ? { …studentForm, id: editingStudentId } : s));
+setEditingStudentId(null);
+} else {
+setStudents([…students, { …studentForm, id: Date.now() }]);
+setIsAddingStudent(false);
+}
+setStudentForm({
+studentId: ‘’,
+lastName: ‘’,
+firstName: ‘’,
+gender: ‘ប្រុស’,
+dob: ‘’,
+phone: ‘’,
+nationality: ‘ខ្មែរ’,
+academicYear: ‘2025-2026’,
+address: ‘’,
+fatherLastName: ‘’,
+fatherFirstName: ‘’,
+fatherPhone: ‘’,
+fatherOccupation: ‘’,
+fatherAddress: ‘’,
+motherLastName: ‘’,
+motherFirstName: ‘’,
+motherPhone: ‘’,
+motherOccupation: ‘’,
+motherAddress: ‘’,
+minority: ‘ទេ’,
+specialNote: ‘’
+});
+};
+
+const handleEditStudent = (student) => {
+setEditingStudentId(student.id);
+setStudentForm(student);
+};
+
+const handleDeleteStudent = (id) => {
+if (confirm(‘តើអ្នកចង់លុបសិស្សនេះមែនទេ?’)) {
+setStudents(students.filter(s => s.id !== id));
+setClassrooms(classrooms.map(c => ({
+…c,
+studentIds: c.studentIds.filter(sid => sid !== id)
+})));
+}
+};
+
+// ចាត់តាំងសិស្ស
+const assignStudentsToClass = () => {
+if (!selectedTeacher || selectedStudents.length === 0) {
+alert(‘សូមជ្រើសរើសគ្រូ និងសិស្ស’);
+return;
+}
+
+```
+setClassrooms(prev => {
+  const updated = [...prev];
+  const classroomIndex = updated.findIndex(c => c.teacherId === selectedTeacher);
+  
+  if (classroomIndex >= 0) {
+    updated[classroomIndex].studentIds = [
+      ...updated[classroomIndex].studentIds,
+      ...selectedStudents
+    ];
+  } else {
+    updated.push({ teacherId: selectedTeacher, studentIds: [...selectedStudents] });
+  }
+  
+  return updated;
+});
+
+setSelectedStudents([]);
+alert('ចាត់តាំងសិស្សជោគជ័យ!');
+```
+
+};
+
+const removeStudentFromClass = (teacherId, studentId) => {
+if (confirm(‘តើអ្នកចង់ដកសិស្សនេះចេញពីថ្នាក់មែនទេ?’)) {
+setClassrooms(prev => prev.map(c =>
+c.teacherId === teacherId ? { …c, studentIds: c.studentIds.filter(id => id !== studentId) } : c
+));
+}
+};
+
+const toggleStudentSelection = (studentId) => {
+setSelectedStudents(prev =>
+prev.includes(studentId) ? prev.filter(id => id !== studentId) : […prev, studentId]
+);
+};
+
+// Render Dashboard
+const renderDashboard = () => (
+<div className="space-y-6">
+<h2 className="text-2xl font-bold text-indigo-900 flex items-center gap-2">
+<Home size={28} />
+ផ្ទាំងគ្រប់គ្រង
+</h2>
+
+```
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-blue-100 text-sm">គ្រូបង្រៀនសរុប</p>
+          <p className="text-4xl font-bold mt-2">{stats.totalTeachers}</p>
+        </div>
+        <GraduationCap size={48} className="opacity-80" />
+      </div>
+    </div>
+
+    <div className="bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg shadow-lg">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-green-100 text-sm">សិស្សសរុប</p>
+          <p className="text-4xl font-bold mt-2">{stats.totalStudents}</p>
+        </div>
+        <Users size={48} className="opacity-80" />
+      </div>
+    </div>
+
+    <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-lg shadow-lg">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-purple-100 text-sm">សិស្សមានថ្នាក់</p>
+          <p className="text-4xl font-bold mt-2">{stats.assignedStudents}</p>
+        </div>
+        <UserCheck size={48} className="opacity-80" />
+      </div>
+    </div>
+  </div>
+
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="bg-white p-6 rounded-lg shadow-lg border-2 border-indigo-200">
+      <h3 className="text-xl font-semibold mb-4 text-indigo-800">ស្ថិតិសិស្ស</h3>
+      <div className="space-y-3">
+        <div className="flex justify-between items-center p-3 bg-blue-50 rounded">
+          <span className="font-medium">សិស្សប្រុស</span>
+          <span className="text-2xl font-bold text-blue-600">{stats.maleStudents}</span>
+        </div>
+        <div className="flex justify-between items-center p-3 bg-pink-50 rounded">
+          <span className="font-medium">សិស្សសស្រី</span>
+          <span className="text-2xl font-bold text-pink-600">{stats.femaleStudents}</span>
+        </div>
+        <div className="flex justify-between items-center p-3 bg-orange-50 rounded">
+          <span className="font-medium">សិស្សមិនទាន់មានថ្នាក់</span>
+          <span className="text-2xl font-bold text-orange-600">{stats.unassignedStudents}</span>
+        </div>
+      </div>
+    </div>
+
+    <div className="bg-white p-6 rounded-lg shadow-lg border-2 border-indigo-200">
+      <h3 className="text-xl font-semibold mb-4 text-indigo-800">ថ្នាក់រៀនសកម្ម</h3>
+      <div className="space-y-2 max-h-64 overflow-y-auto">
+        {teachers.map(teacher => {
+          const studentsCount = getStudentsInClass(teacher.id).length;
+          return (
+            <div key={teacher.id} className="flex justify-between items-center p-3 bg-gray-50 rounded border">
+              <div>
+                <p className="font-medium">{teacher.name}</p>
+                <p className="text-sm text-gray-600">{teacher.grade}</p>
+              </div>
+              <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full font-semibold">
+                {studentsCount} នាក់
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+);
+
+// Render គ្រូ
+const renderTeachers = () => (
+<div className="space-y-6">
+<div className="flex justify-between items-center">
+<h2 className="text-2xl font-bold text-indigo-900 flex items-center gap-2">
+<GraduationCap size={28} />
+គ្រប់គ្រងគ្រូបង្រៀន
+</h2>
+{!isAddingTeacher && !editingTeacherId && (
+<button onClick={() => setIsAddingTeacher(true)} className=“bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2”>
+<Plus size={20} /> បន្ថែមគ្រូ
+</button>
+)}
+</div>
+
+```
+  <div className="relative">
+    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+    <input
+      type="text"
+      placeholder="ស្វែងរកគ្រូ..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-indigo-500"
+    />
+  </div>
+
+  {(isAddingTeacher || editingTeacherId) && (
+    <div className="bg-gray-50 p-6 rounded-lg border-2 border-indigo-200">
+      <h3 className="text-xl font-semibold mb-4 text-indigo-800">{editingTeacherId ? 'កែប្រែគ្រូ' : 'បន្ថែមគ្រូថ្មី'}</h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <input 
+          value={teacherForm.teacherId} 
+          onChange={(e) => setTeacherForm({...teacherForm, teacherId: e.target.value})} 
+          placeholder="អត្តលេខ *" 
+          className="border rounded px-3 py-2" 
+          required 
+        />
+        <input 
+          value={teacherForm.lastName} 
+          onChange={(e) => setTeacherForm({...teacherForm, lastName: e.target.value})} 
+          placeholder="គោត្តនាម *" 
+          className="border rounded px-3 py-2" 
+          required 
+        />
+        <input 
+          value={teacherForm.firstName} 
+          onChange={(e) => setTeacherForm({...teacherForm, firstName: e.target.value})} 
+          placeholder="នាម *" 
+          className="border rounded px-3 py-2" 
+          required 
+        />
+        <select 
+          value={teacherForm.gender} 
+          onChange={(e) => setTeacherForm({...teacherForm, gender: e.target.value})} 
+          className="border rounded px-3 py-2"
+        >
+          <option value="ប្រុស">ប្រុស</option>
+          <option value="ស្រី">ស្រី</option>
+        </select>
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">ថ្ងៃខែឆ្នាំកំណើត *</label>
+          <input 
+            type="date"
+            value={teacherForm.dob} 
+            onChange={(e) => setTeacherForm({...teacherForm, dob: e.target.value})} 
+            className="border rounded px-3 py-2 w-full" 
+            required 
+          />
+        </div>
+        {teacherForm.dob && (
+          <div className="border rounded px-3 py-2 bg-blue-50">
+            <label className="block text-sm text-gray-600">អាយុ (ស្វ័យប្រវត្តិ)</label>
+            <span className="text-lg font-semibold text-blue-700">{calculateAge(teacherForm.dob)} ឆ្នាំ</span>
+          </div>
+        )}
+        <div>
+          <label className="block text-sm text-gray-600 mb-1">កាលបរិច្ឆេទចេញបម្រើការ *</label>
+          <input 
+            type="date"
+            value={teacherForm.startWorkDate} 
+            onChange={(e) => setTeacherForm({...teacherForm, startWorkDate: e.target.value})} 
+            className="border rounded px-3 py-2 w-full" 
+            required 
+          />
+        </div>
+        <select 
+          value={teacherForm.framework} 
+          onChange={(e) => setTeacherForm({...teacherForm, framework: e.target.value})} 
+          className="border rounded px-3 py-2"
+        >
+          <option value="បឋម">បឋម</option>
+          <option value="មធ្យម">មធ្យម</option>
+          <option value="បឋមនិងមធ្យម">បឋមនិងមធ្យម</option>
+        </select>
+        <input 
+          value={teacherForm.salary} 
+          onChange={(e) => setTeacherForm({...teacherForm, salary: e.target.value})} 
+          placeholder="កាំប្រាក់ (គ.X) *" 
+          className="border rounded px-3 py-2" 
+          required 
+        />
+        {teacherForm.startWorkDate && (
+          <div className="border rounded px-3 py-2 bg-green-50">
+            <label className="block text-sm text-gray-600">រយៈពេលបម្រើការ (ស្វ័យប្រវត្តិ)</label>
+            <span className="text-lg font-semibold text-green-700">{calculateServiceYears(teacherForm.startWorkDate)}</span>
+          </div>
+        )}
+        <select 
+          value={teacherForm.status} 
+          onChange={(e) => setTeacherForm({...teacherForm, status: e.target.value})} 
+          className="border rounded px-3 py-2 md:col-span-2"
+        >
+          <option value="គ្រូមានថេរវេន">គ្រូមានថេរវេន</option>
+          <option value="គ្រូកិច្ចសន្យា">គ្រូកិច្ចសន្យា</option>
+          <option value="គ្រូស្ម័គ្រចិត្ត">គ្រូស្ម័គ្រចិត្ត</option>
+        </select>
+      </div>
+      <div className="flex gap-3 mt-4">
+        <button onClick={() => { setIsAddingTeacher(false); setEditingTeacherId(null); }} className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center gap-2">
+          <X size={18} /> បោះបង់
+        </button>
+        <button onClick={handleSaveTeacher} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
+          <Save size={18} /> រក្សាទុក
+        </button>
+      </div>
+    </div>
+  )}
+
+  <div className="overflow-x-auto bg-white rounded-lg shadow">
+    <table className="w-full">
+      <thead className="bg-indigo-600 text-white">
+        <tr>
+          <th className="p-3 text-left">អត្តលេខ</th>
+          <th className="p-3 text-left">គោត្តនាម និងនាម</th>
+          <th className="p-3 text-left">ភេទ</th>
+          <th className="p-3 text-left">ថ្ងៃកំណើត</th>
+          <th className="p-3 text-left">អាយុ</th>
+          <th className="p-3 text-left">ចេញបម្រើការ</th>
+          <th className="p-3 text-left">រយៈពេលបម្រើការ</th>
+          <th className="p-3 text-left">ក្របខ័ណ្ឌ</th>
+          <th className="p-3 text-left">កាំប្រាក់</th>
+          <th className="p-3 text-left">ស្ថានភាព</th>
+          <th className="p-3 text-left">សិស្ស</th>
+          <th className="p-3 text-center">សកម្មភាព</th>
+        </tr>
+      </thead>
+      <tbody>
+        {filterTeachers.map(teacher => (
+          <tr key={teacher.id} className="border-b hover:bg-gray-50">
+            <td className="p-3">{teacher.teacherId}</td>
+            <td className="p-3 font-medium">{teacher.lastName} {teacher.firstName}</td>
+            <td className="p-3">{teacher.gender}</td>
+            <td className="p-3">{teacher.dob}</td>
+            <td className="p-3">
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded font-semibold">
+                {calculateAge(teacher.dob)} ឆ្នាំ
+              </span>
+            </td>
+            <td className="p-3">{teacher.startWorkDate}</td>
+            <td className="p-3">
+              <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-semibold">
+                {calculateServiceYears(teacher.startWorkDate)}
+              </span>
+            </td>
+            <td className="p-3">{teacher.framework}</td>
+            <td className="p-3">{teacher.salary}</td>
+            <td className="p-3">
+              <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                teacher.status === 'គ្រូមានថេរវេន' ? 'bg-indigo-100 text-indigo-800' : 
+                teacher.status === 'គ្រូកិច្ចសន្យា' ? 'bg-orange-100 text-orange-800' : 
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {teacher.status}
+              </span>
+            </td>
+            <td className="p-3">
+              <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-sm font-semibold">
+                {getStudentsInClass(teacher.id).length} នាក់
+              </span>
+            </td>
+            <td className="p-3">
+              <div className="flex gap-2 justify-center">
+                <button onClick={() => handleEditTeacher(teacher)} className="text-blue-600 hover:text-blue-800">
+                  <Edit2 size={18} />
+                </button>
+                <button onClick={() => handleDeleteTeacher(teacher.id)} className="text-red-600 hover:text-red-800">
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+```
+
+);
+
+// Render សិស្ស
+const renderStudents = () => (
+<div className="space-y-6">
+<div className="flex justify-between items-center">
+<h2 className="text-2xl font-bold text-indigo-900 flex items-center gap-2">
+<Users size={28} />
+គ្រប់គ្រងសិស្ស
+</h2>
+{!isAddingStudent && !editingStudentId && (
+<button onClick={() => setIsAddingStudent(true)} className=“bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2”>
+<Plus size={20} /> បន្ថែមសិស្ស
+</button>
+)}
+</div>
+
+```
+  <div className="relative">
+    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+    <input
+      type="text"
+      placeholder="ស្វែងរកសិស្ស..."
+      value={searchTerm}
+      onChange={(e) => setSearchTerm(e.target.value)}
+      className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-500"
+    />
+  </div>
+
+  {(isAddingStudent || editingStudentId) && (
+    <div className="bg-gray-50 p-6 rounded-lg border-2 border-green-200 max-h-[70vh] overflow-y-auto">
+      <h3 className="text-xl font-semibold mb-4">{editingStudentId ? 'កែប្រែសិស្ស' : 'បន្ថែមសិស្សថ្មី'}</h3>
+      
+      <div className="space-y-6">
+        {/* ព័ត៌មានសិស្ស */}
+        <div>
+          <h4 className="font-semibold text-lg mb-3 text-green-700">ព័ត៌មានសិស្ស</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input value={studentForm.studentId} onChange={(e) => setStudentForm({...studentForm, studentId: e.target.value})} placeholder="អត្តលេខ *" className="border rounded px-3 py-2" />
+            <input value={studentForm.lastName} onChange={(e) => setStudentForm({...studentForm, lastName: e.target.value})} placeholder="គោត្តនាម *" className="border rounded px-3 py-2" />
+            <input value={studentForm.firstName} onChange={(e) => setStudentForm({...studentForm, firstName: e.target.value})} placeholder="នាម *" className="border rounded px-3 py-2" />
+            <input type="date" value={studentForm.dob} onChange={(e) => setStudentForm({...studentForm, dob: e.target.value})} className="border rounded px-3 py-2" />
+            <select value={studentForm.gender} onChange={(e) => setStudentForm({...studentForm, gender: e.target.value})} className="border rounded px-3 py-2">
+              <option value="ប្រុស">ប្រុស</option>
+              <option value="ស្រី">ស្រី</option>
+            </select>
+            <input value={studentForm.phone} onChange={(e) => setStudentForm({...studentForm, phone: e.target.value})} placeholder="លេខទូរស័ព្ទ" className="border rounded px-3 py-2" />
+            <input value={studentForm.nationality} onChange={(e) => setStudentForm({...studentForm, nationality: e.target.value})} placeholder="សញ្ជាតិ" className="border rounded px-3 py-2" />
+            <input value={studentForm.academicYear} onChange={(e) => setStudentForm({...studentForm, academicYear: e.target.value})} placeholder="ឆ្នាំសិក្សា *" className="border rounded px-3 py-2" />
+            <input value={studentForm.address} onChange={(e) => setStudentForm({...studentForm, address: e.target.value})} placeholder="អាសយដ្ឋានពេញ" className="border rounded px-3 py-2 md:col-span-3" />
+          </div>
+        </div>
+
+        {/* ព័ត៌មានរបស់ឪពុក */}
+        <div>
+          <h4 className="font-semibold text-lg mb-3 text-green-700">ព័ត៌មានរបស់ឪពុក</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input value={studentForm.fatherLastName} onChange={(e) => setStudentForm({...studentForm, fatherLastName: e.target.value})} placeholder="គោត្តនាម" className="border rounded px-3 py-2" />
+            <input value={studentForm.fatherFirstName} onChange={(e) => setStudentForm({...studentForm, fatherFirstName: e.target.value})} placeholder="នាម" className="border rounded px-3 py-2" />
+            <input value={studentForm.fatherPhone} onChange={(e) => setStudentForm({...studentForm, fatherPhone: e.target.value})} placeholder="លេខទូរស័ព្ទ" className="border rounded px-3 py-2" />
+            <input value={studentForm.fatherOccupation} onChange={(e) => setStudentForm({...studentForm, fatherOccupation: e.target.value})} placeholder="មុខរបរ" className="border rounded px-3 py-2" />
+            <input value={studentForm.fatherAddress} onChange={(e) => setStudentForm({...studentForm, fatherAddress: e.target.value})} placeholder="អាសយដ្ឋាន" className="border rounded px-3 py-2 md:col-span-2" />
+          </div>
+        </div>
+
+        {/* ព័ត៌មានរបស់ម្ដាយ */}
+        <div>
+          <h4 className="font-semibold text-lg mb-3 text-green-700">ព័ត៌មានរបស់ម្ដាយ</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input value={studentForm.motherLastName} onChange={(e) => setStudentForm({...studentForm, motherLastName: e.target.value})} placeholder="គោត្តនាម" className="border rounded px-3 py-2" />
+            <input value={studentForm.motherFirstName} onChange={(e) => setStudentForm({...studentForm, motherFirstName: e.target.value})} placeholder="នាម" className="border rounded px-3 py-2" />
+            <input value={studentForm.motherPhone} onChange={(e) => setStudentForm({...studentForm, motherPhone: e.target.value})} placeholder="លេខទូរស័ព្ទ" className="border rounded px-3 py-2" />
+            <input value={studentForm.motherOccupation} onChange={(e) => setStudentForm({...studentForm, motherOccupation: e.target.value})} placeholder="មុខរបរ" className="border rounded px-3 py-2" />
+            <input value={studentForm.motherAddress} onChange={(e) => setStudentForm({...studentForm, motherAddress: e.target.value})} placeholder="អាសយដ្ឋាន" className="border rounded px-3 py-2 md:col-span-2" />
+          </div>
+        </div>
+
+        {/* លក្ខណៈពិសេសផ្សេងៗ */}
+        <div>
+          <h4 className="font-semibold text-lg mb-3 text-green-700">លក្ខណៈពិសេសផ្សេងៗ</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <select value={studentForm.minority} onChange={(e) => setStudentForm({...studentForm, minority: e.target.value})} className="border rounded px-3 py-2">
+              <option value="ទេ">ជនជាតិដើមភាគតិច: ទេ</option>
+              <option value="បាទ/ចាស">ជនជាតិដើមភាគតិច: បាទ/ចាស</option>
+            </select>
+            <input value={studentForm.specialNote} onChange={(e) => setStudentForm({...studentForm, specialNote: e.target.value})} placeholder="លក្ខណៈពិសេស" className="border rounded px-3 py-2" />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex gap-3 mt-6 pt-4 border-t">
+        <button onClick={() => { setIsAddingStudent(false); setEditingStudentId(null); }} className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center gap-2">
+          <X size={18} /> បោះបង់
+        </button>
+        <button onClick={handleSaveStudent} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
+          <Save size={18} /> រក្សាទុក
+        </button>
+      </div>
+    </div>
+  )}
+
+  <div className="overflow-x-auto bg-white rounded-lg shadow">
+    <table className="w-full">
+      <thead className="bg-green-600 text-white">
+        <tr>
+          <th className="p-3 text-left">អត្តលេខ</th>
+          <th className="p-3 text-left">គោត្តនាម និងនាម</th>
+          <th className="p-3 text-left">ភេទ</th>
+          <th className="p-3 text-left">ថ្ងៃកំណើត</th>
+          <th className="p-3 text-left">ឪពុក</th>
+          <th className="p-3 text-left">ម្ដាយ</th>
+          <th className="p-3 text-left">ឆ្នាំសិក្សា</th>
+          <th className="p-3 text-center">សកម្មភាព</th>
+        </tr>
+      </thead>
+      <tbody>
+        {filterStudents.map(student => (
+          <tr key={student.id} className="border-b hover:bg-gray-50">
+            <td className="p-3">{student.studentId}</td>
+            <td className="p-3 font-medium">{student.lastName} {student.firstName}</td>
+            <td className="p-3">{student.gender}</td>
+            <td className="p-3">{student.dob}</td>
+            <td className="p-3">{student.fatherLastName} {student.fatherFirstName}</td>
+            <td className="p-3">{student.motherLastName} {student.motherFirstName}</td>
+            <td className="p-3">{student.academicYear}</td>
+            <td className="p-3">
+              <div className="flex gap-2 justify-center">
+                <button onClick={() => handleEditStudent(student)} className="text-blue-600 hover:text-blue-800">
+                  <Edit2 size={18} />
+                </button>
+                <button onClick={() => handleDeleteStudent(student.id)} className="text-red-600 hover:text-red-800">
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>
+```
+
+);
+
+// Render ថ្នាក់រៀន
+const renderClassrooms = () => (
+<div className="space-y-6">
+<h2 className="text-2xl font-bold text-indigo-900 flex items-center gap-2">
+<BookOpen size={28} />
+ចាត់តាំងសិស្សទៅថ្នាក់រៀន
+</h2>
+
+```
+  <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-lg border-2 border-purple-200">
+    <h3 className="text-xl font-semibold mb-4 text-purple-800 flex items-center gap-2">
+      <UserPlus size={24} />
+      ចាត់តាំងសិស្សថ្មី
+    </h3>
+    
+    <div className="space-y-4">
+      <div>
+        <label className="block font-semibold mb-2 text-gray-700">ជ្រើសរើសគ្រូបង្រៀន *</label>
+        <select
+          value={selectedTeacher || ''}
+          onChange={(e) => setSelectedTeacher(Number(e.target.value))}
+          className="w-full border-2 border-purple-300 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500"
+        >
+          <option value="">-- ជ្រើសរើសគ្រូ --</option>
+          {teachers.map(teacher => (
+            <option key={teacher.id} value={teacher.id}>
+              {teacher.lastName} {teacher.firstName} - {teacher.framework} ({teacher.salary})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="block font-semibold mb-2 text-gray-700">
+          ជ្រើសរើសសិស្ស * ({selectedStudents.length} នាក់)
+        </label>
+        <div className="border-2 border-purple-300 rounded-lg p-4 bg-white max-h-64 overflow-y-auto">
+          {getUnassignedStudents().length === 0 ? (
+            <p className="text-gray-500 text-center py-4">គ្មានសិស្សដែលមិនទាន់មានថ្នាក់</p>
+          ) : (
+            <div className="space-y-2">
+              {getUnassignedStudents().map(student => (
+                <label
+                  key={student.id}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-purple-50 cursor-pointer transition"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedStudents.includes(student.id)}
+                    onChange={() => toggleStudentSelection(student.id)}
+                    className="w-5 h-5 text-purple-600"
+                  />
+                  <div className="flex-1">
+                    <span className="font-medium">{student.lastName} {student.firstName}</span>
+                    <span className="text-gray-500 text-sm ml-2">
+                      ({student.studentId}) - {student.gender}
+                    </span>
+                  </div>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <button
+        onClick={assignStudentsToClass}
+        disabled={!selectedTeacher || selectedStudents.length === 0}
+        className="w-full bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-semibold flex items-center justify-center gap-2"
+      >
+        <UserCheck size={20} />
+        ចាត់តាំងសិស្ស
+      </button>
+    </div>
+  </div>
+
+  <div>
+    <h3 className="text-xl font-semibold mb-4 text-indigo-900">បញ្ជីថ្នាក់រៀនទាំងអស់</h3>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {teachers.map(teacher => {
+        const studentsInClass = getStudentsInClass(teacher.id);
+        return (
+          <div key={teacher.id} className="bg-white border-2 border-indigo-200 rounded-lg p-5 shadow-md hover:shadow-lg transition">
+            <div className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-4 rounded-lg mb-4">
+              <h4 className="text-lg font-bold mb-1">{teacher.lastName} {teacher.firstName}</h4>
+              <p className="text-sm opacity-90">{teacher.framework} - {teacher.salary}</p>
+              <p className="text-xs opacity-80 mt-1">អាយុ: {calculateAge(teacher.dob)} ឆ្នាំ | បម្រើការ: {calculateServiceYears(teacher.startWorkDate)}</p>
+            </div>
+
+            <div className="mb-3 flex items-center gap-2 text-gray-700 font-semibold">
+              <Users size={20} className="text-indigo-600" />
+              <span>សិស្សសរុប: {studentsInClass.length} នាក់</span>
+            </div>
+
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {studentsInClass.length === 0 ? (
+                <p className="text-gray-400 text-center py-4 italic">មិនទាន់មានសិស្ស</p>
+              ) : (
+                studentsInClass.map((student, index) => (
+                  <div
+                    key={student.id}
+                    className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200"
+                  >
+                    <div>
+                      <span className="font-medium text-gray-800">
+                        {index + 1}. {student.lastName} {student.firstName}
+                      </span>
+                      <span className="text-gray-500 text-sm ml-2">
+                        ({student.studentId})
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => removeStudentFromClass(teacher.id, student.id)}
+                      className="text-red-600 hover:text-red-800 hover:bg-red-50 p-2 rounded transition"
+                      title="ដកសិស្សចេញពីថ្នាក់"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</div>
+```
+
+);
+
+// Render របាយការណ៍
+const renderReports = () => (
+<div className="space-y-6">
+<h2 className="text-2xl font-bold text-indigo-900 flex items-center gap-2">
+<FileText size={28} />
+របាយការណ៍ស្ថិតិ
+</h2>
+
+```
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="bg-white p-6 rounded-lg shadow-lg border-2 border-indigo-200">
+      <h3 className="text-xl font-semibold mb-4 text-indigo-800 flex items-center gap-2">
+        <BarChart3 size={24} />
+        សង្ខេបទូទៅ
+      </h3>
+      <div className="space-y-4">
+        <div className="p-4 bg-blue-50 rounded-lg">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-gray-700">គ្រូបង្រៀនសរុប</span>
+            <span className="text-3xl font-bold text-blue-600">{stats.totalTeachers}</span>
+          </div>
+        </div>
+        <div className="p-4 bg-green-50 rounded-lg">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-gray-700">សិស្សសរុប</span>
+            <span className="text-3xl font-bold text-green-600">{stats.totalStudents}</span>
+          </div>
+        </div>
+        <div className="p-4 bg-purple-50 rounded-lg">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-gray-700">សិស្សមានថ្នាក់</span>
+            <span className="text-3xl font-bold text-purple-600">{stats.assignedStudents}</span>
+          </div>
+        </div>
+        <div className="p-4 bg-orange-50 rounded-lg">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-gray-700">សិស្សមិនទាន់មានថ្នាក់</span>
+            <span className="text-3xl font-bold text-orange-600">{stats.unassignedStudents}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div className="bg-white p-6 rounded-lg shadow-lg border-2 border-indigo-200">
+      <h3 className="text-xl font-semibold mb-4 text-indigo-800">ស្ថិតិសិស្សតាមភេទ</h3>
+      <div className="space-y-4">
+        <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-gray-700">សិស្សប្រុស</span>
+            <div className="text-right">
+              <span className="text-3xl font-bold text-blue-600">{stats.maleStudents}</span>
+              <p className="text-sm text-gray-600">
+                {stats.totalStudents > 0 ? ((stats.maleStudents / stats.totalStudents) * 100).toFixed(1) : 0}%
+              </p>
+            </div>
+          </div>
+          <div className="mt-2 bg-blue-200 rounded-full h-2">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all" 
+              style={{ width: `${stats.totalStudents > 0 ? (stats.maleStudents / stats.totalStudents) * 100 : 0}%` }}
+            ></div>
+          </div>
+        </div>
+
+        <div className="p-4 bg-pink-50 rounded-lg border-l-4 border-pink-500">
+          <div className="flex justify-between items-center">
+            <span className="font-medium text-gray-700">សិស្សស្រី</span>
+            <div className="text-right">
+              <span className="text-3xl font-bold text-pink-600">{stats.femaleStudents}</span>
+              <p className="text-sm text-gray-600">
+                {stats.totalStudents > 0 ? ((stats.femaleStudents / stats.totalStudents) * 100).toFixed(1) : 0}%
+              </p>
+            </div>
+          </div>
+          <div className="mt-2 bg-pink-200 rounded-full h-2">
+            <div 
+              className="bg-pink-600 h-2 rounded-full transition-all" 
+              style={{ width: `${stats.totalStudents > 0 ? (stats.femaleStudents / stats.totalStudents) * 100 : 0}%` }}
+            ></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div className="bg-white p-6 rounded-lg shadow-lg border-2 border-indigo-200 md:col-span-2">
+      <h3 className="text-xl font-semibold mb-4 text-indigo-800">របាយការណ៍ថ្នាក់រៀន</h3>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-indigo-100">
+            <tr>
+              <th className="p-3 text-left">គ្រូបង្រៀន</th>
+              <th className="p-3 text-left">ក្របខ័ណ្ឌ</th>
+              <th className="p-3 text-left">កាំប្រាក់</th>
+              <th className="p-3 text-center">អាយុ</th>
+              <th className="p-3 text-left">រយៈពេលបម្រើការ</th>
+              <th className="p-3 text-center">សិស្សសរុប</th>
+              <th className="p-3 text-center">ប្រុស</th>
+              <th className="p-3 text-center">ស្រី</th>
+              <th className="p-3 text-left">ស្ថានភាព</th>
+            </tr>
+          </thead>
+          <tbody>
+            {teachers.map(teacher => {
+              const studentsInClass = getStudentsInClass(teacher.id);
+              const maleCount = studentsInClass.filter(s => s.gender === 'ប្រុស').length;
+              const femaleCount = studentsInClass.filter(s => s.gender === 'ស្រី').length;
+              return (
+                <tr key={teacher.id} className="border-b hover:bg-gray-50">
+                  <td className="p-3 font-medium">{teacher.lastName} {teacher.firstName}</td>
+                  <td className="p-3">{teacher.framework}</td>
+                  <td className="p-3">{teacher.salary}</td>
+                  <td className="p-3 text-center">
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      {calculateAge(teacher.dob)} ឆ្នាំ
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">
+                      {calculateServiceYears(teacher.startWorkDate)}
+                    </span>
+                  </td>
+                  <td className="p-3 text-center">
+                    <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full font-semibold">
+                      {studentsInClass.length}
+                    </span>
+                  </td>
+                  <td className="p-3 text-center">
+                    <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">
+                      {maleCount}
+                    </span>
+                  </td>
+                  <td className="p-3 text-center">
+                    <span className="bg-pink-100 text-pink-800 px-3 py-1 rounded-full">
+                      {femaleCount}
+                    </span>
+                  </td>
+                  <td className="p-3">{teacher.status}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+);
+
+return (
+<div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-6">
+<div className="max-w-7xl mx-auto">
+<div className="bg-white rounded-lg shadow-xl p-6 mb-6">
+<h1 className="text-4xl font-bold text-center mb-6 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+ប្រព័ន្ធគ្រប់គ្រងសាលារៀន
+</h1>
+
+```
+      <div className="flex flex-wrap gap-2 mb-6 border-b-2 border-gray-200">
+        <button
+          onClick={() => { setActiveTab('dashboard'); setSearchTerm(''); }}
+          className={`px-6 py-3 font-semibold rounded-t-lg transition flex items-center gap-2 ${
+            activeTab === 'dashboard' 
+              ? 'bg-indigo-600 text-white' 
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          <Home size={20} />
+          ផ្ទាំងគ្រប់គ្រង
+        </button>
+        <button
+          onClick={() => { setActiveTab('teachers'); setSearchTerm(''); }}
+          className={`px-6 py-3 font-semibold rounded-t-lg transition flex items-center gap-2 ${
+            activeTab === 'teachers' 
+              ? 'bg-indigo-600 text-white' 
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          <GraduationCap size={20} />
+          គ្រូបង្រៀន ({teachers.length})
+        </button>
+        <button
+          onClick={() => { setActiveTab('students'); setSearchTerm(''); }}
+          className={`px-6 py-3 font-semibold rounded-t-lg transition flex items-center gap-2 ${
+            activeTab === 'students' 
+              ? 'bg-green-600 text-white' 
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          <Users size={20} />
+          សិស្ស ({students.length})
+        </button>
+        <button
+          onClick={() => { setActiveTab('classrooms'); setSearchTerm(''); }}
+          className={`px-6 py-3 font-semibold rounded-t-lg transition flex items-center gap-2 ${
+            activeTab === 'classrooms' 
+              ? 'bg-purple-600 text-white' 
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          <BookOpen size={20} />
+          ថ្នាក់រៀន
+        </button>
+        <button
+          onClick={() => { setActiveTab('reports'); setSearchTerm(''); }}
+          className={`px-6 py-3 font-semibold rounded-t-lg transition flex items-center gap-2 ${
+            activeTab === 'reports' 
+              ? 'bg-orange-600 text-white' 
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          <FileText size={20} />
+          របាយការណ៍
+        </button>
+      </div>
+
+      <div>
+        {activeTab === 'dashboard' && renderDashboard()}
+        {activeTab === 'teachers' && renderTeachers()}
+        {activeTab === 'students' && renderStudents()}
+        {activeTab === 'classrooms' && renderClassrooms()}
+        {activeTab === 'reports' && renderReports()}
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+);
+}
